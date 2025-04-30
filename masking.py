@@ -408,5 +408,3 @@ def masking_tool(text, option=False):
         "정보": ""
     }
 
-
-launch_masking_ui()
