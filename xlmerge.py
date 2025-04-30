@@ -1,8 +1,12 @@
+
 # merge_xls.py
-import os, glob, shutil, pandas as pd, pyzipper
+import os, glob, shutil
+import pandas as pd
+import pyzipper
 from datetime import datetime
 from google.colab import files
-from IPython.display import clear_output
+from IPython.display import display, clear_output, Markdown
+import ipywidgets as widgets
 
 def merge_xls_from_zip(marker_mode='text', marker_value='★시작★', row_idx=0):
     clear_output()
@@ -38,8 +42,10 @@ def merge_xls_from_zip(marker_mode='text', marker_value='★시작★', row_idx=
             if marker_mode == 'text':
                 found = df_raw[df_raw.iloc[:, 0].astype(str).str.strip() == marker_value.strip()]
                 actual_start = found.index[0] + 1 if not found.empty else None
+                print(f"📌 기준 텍스트 '{marker_value}' → {actual_start}행부터 병합")
             else:
                 actual_start = row_idx
+                print(f"📌 입력한 행 번호 {row_idx} → {actual_start}행부터 병합")
         try:
             df = df_raw.iloc[actual_start:].copy()
             df.columns = df.iloc[0]
@@ -57,3 +63,33 @@ def merge_xls_from_zip(marker_mode='text', marker_value='★시작★', row_idx=
     result.to_excel(outname, index=False)
     print(f"\n✅ 병합 완료 → {outname}")
     files.download(outname)
+
+
+def launch_xlmerge_ui():
+    display(Markdown("### 📊 엑셀 ZIP 병합기"))
+    mode_radio = widgets.RadioButtons(
+        options=[('기준 텍스트로 병합', 'text'), ('행 번호로 병합 (0부터)', 'row')],
+        description='병합 기준', style={'description_width': 'initial'}
+    )
+    marker_input = widgets.Text(value='★시작★', description='기준 텍스트', style={'description_width': 'initial'})
+    row_input = widgets.IntText(value=0, description='헤더 윗 행 번호', style={'description_width': 'initial'})
+    input_box = widgets.VBox([marker_input])
+    run_btn = widgets.Button(description='병합 실행', button_style='success')
+    output_box = widgets.Output()
+
+    def update_input(mode):
+        input_box.children = [marker_input] if mode == 'text' else [row_input]
+    def on_radio_change(change):
+        if change['name'] == 'value':
+            update_input(change['new'])
+    def on_run(b):
+        output_box.clear_output()
+        with output_box:
+            marker = marker_input.value
+            row_idx = row_input.value
+            merge_xls_from_zip(marker_mode=mode_radio.value, marker_value=marker, row_idx=row_idx)
+
+    mode_radio.observe(on_radio_change, names='value')
+    run_btn.on_click(on_run)
+
+    display(mode_radio, input_box, run_btn, output_box)
