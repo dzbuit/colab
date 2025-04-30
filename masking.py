@@ -153,21 +153,22 @@ def extract_names(text):
     # ✅ 사전 정의된 "사람이 아닌 표현" 필터링 목록
     FORBIDDEN_NAME_TERMS = {
         "보호자", "담당자", "대상자", "피해자", "의사", "간호사", "학생",
-        "주민", "아동", "매니저", "대표", "교수", "강사", "직원", "총무", "사무장", "프로젝트", "긴급", 
+        "주민", "아동", "매니저", "대표", "교수", "강사", "직원", "총무", "사무장",
+        "프로젝트", "긴급"
     }
 
-    # ✅ NER 결과 기반 이름 후보 수집 (금지어 제외)
+    # ✅ NER 결과 기반 이름 후보 수집 (금지어 포함된 경우 제외)
     names = [
         e["word"].replace("##", "").strip()
         for e in ner_results
         if e["entity_group"] == "PS"
-        and e["word"].strip() not in FORBIDDEN_NAME_TERMS
+        and not any(forbidden in e["word"] for forbidden in FORBIDDEN_NAME_TERMS)
     ]
 
     # ✅ 문장 패턴 기반 후보 보완
     names_from_pattern = extract_names_by_pattern(text)
     for name in names_from_pattern:
-        if name not in names and name not in FORBIDDEN_NAME_TERMS:
+        if name not in names and not any(forbidden in name for forbidden in FORBIDDEN_NAME_TERMS):
             names.append(name)
 
     return names
