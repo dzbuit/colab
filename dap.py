@@ -99,7 +99,7 @@ def normalize_key(x):
 
 def clean_se_detail_column(df):
     df["세세목"] = df["세세목"].fillna("").astype(str).str.strip()
-    df.loc[df["세세목"] == "", "세세목"] = "BLANK"
+    df.loc[df["세세목"] == "", "세세목"] = "-"
     return df
 
 
@@ -209,7 +209,7 @@ def inject_hyeonyeak_columns(df_summary, df_original):
     # 1. 현액/연예산 계산
     numeric_summary = (
         df_original
-        .assign(세세목=lambda df: df["세세목"].fillna("").astype(str).str.strip().replace("", "BLANK"))
+        .assign(세세목=lambda df: df["세세목"].fillna("").astype(str).str.strip().replace("", "-"))
         .groupby(key_cols, dropna=False)[month_cols]
         .sum()
         .reset_index()
@@ -363,7 +363,7 @@ def generate_sheet_5_6(df_summary_input):
 
     # 2. 세세목 정제
     df_summary["세세목"] = df_summary["세세목"].fillna("").astype(str).str.strip()
-    df_summary.loc[df_summary["세세목"] == "", "세세목"] = "BLANK"
+    df_summary.loc[df_summary["세세목"] == "", "세세목"] = "-"
 
     # 3. 정렬
     df_summary = sort_pivot_df(df_summary, with_se_detail=True)
@@ -577,7 +577,7 @@ def run_final_report(b):
         df_expense = compose_jaewon_detail(df_expense)   # ✅ 재원순서 추가
 
         # ✅ [추가] 세세목이 비어있는 경우 BLANK로 대체 (시트1 처리)
-        df_expense["세세목"] = df_expense["세세목"].fillna("BLANK").astype(str).str.strip()
+        df_expense["세세목"] = df_expense["세세목"].fillna("-").astype(str).str.strip()
 
 
 
@@ -600,10 +600,10 @@ def run_final_report(b):
 
         # ✅ 세세목 비어있는 값은 먼저 "BLANK"로 전처리 (pivot 전에 반드시 수행)
         df_expense["세세목"] = df_expense["세세목"].fillna("").astype(str).str.strip()
-        df_expense.loc[df_expense["세세목"] == "", "세세목"] = "BLANK"
+        df_expense.loc[df_expense["세세목"] == "", "세세목"] = "-"
 
         df_income["세세목"] = df_income["세세목"].fillna("").astype(str).str.strip()
-        df_income.loc[df_income["세세목"] == "", "세세목"] = "BLANK"
+        df_income.loc[df_income["세세목"] == "", "세세목"] = "-"
 
         # ✅ 5,6번 시트 생성 함수 호출
         exp_sub_full = generate_sheet_5_6(df_expense)
