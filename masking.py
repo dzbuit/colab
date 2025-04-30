@@ -356,11 +356,17 @@ def sanitize_sensitive_info(text):
 # ✅ 후처리: 조사/어미가 붙은 경우에도 이름만 정확히 치환
 def final_name_remask_exact_only(original_text, masked_text, mapping_dict):
     for tag, name in mapping_dict.items():
-        # ✅ 이름 뒤에 조사/호칭/어미가 붙은 경우까지 포함해 치환
-        pattern = re.compile(rf'(?<![\w가-힣])({re.escape(name)})(?=[가-힣]{0,4}|\W|$)')
+        suffix = f"(?:{'|'.join(COMMON_SUFFIXES)})?"
+        josa = f"(?:{'|'.join(COMMON_JOSA)})?"
+        pattern = re.compile(
+            rf"(?<![\w가-힣])({re.escape(name)}\s*{suffix}\s*{josa})(?![\w가-힣])"
+        )
 
-        # ✅ 이름만 태깅하고, 뒤 조사/호칭은 유지
-        masked_text = pattern.sub(lambda m: m.group(0).replace(name, tag), masked_text)
+        def replacer(match):
+            full = match.group(1)
+            return full.replace(name, tag)
+
+        masked_text = pattern.sub(replacer, masked_text)
 
     return masked_text
 
