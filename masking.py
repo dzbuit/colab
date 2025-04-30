@@ -1,7 +1,4 @@
 
-!pip install transformers --quiet
-
-
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 import re, os
 
