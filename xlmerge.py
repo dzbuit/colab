@@ -1,5 +1,23 @@
 # xlmerge.py
 
+def run_merge():
+    # ✅ 사용법 안내 메시지 (최초 실행 시)
+    print("""
+📦 xlmerge 사용 안내
+
+1. zip 파일을 업로드하세요 (xlsx 파일들을 압축한 zip)
+2. 병합 기준을 선택하세요:
+   - '★시작★' 같은 텍스트 (기본값) 또는
+   - 시작할 행 번호
+3. '병합 실행' 버튼 클릭
+4. 병합된 파일이 자동으로 다운로드됩니다.
+
+⚠️ zip 내부에는 xlsx 파일만 있어야 합니다.
+""")
+
+
+
+
 import os, glob, shutil
 import pandas as pd
 import pyzipper
