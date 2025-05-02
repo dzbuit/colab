@@ -20,6 +20,8 @@ def clean_workspace():
 
 def unzip_files(zip_name, extract_folder="unzipped_excels"):
     os.makedirs(extract_folder, exist_ok=True)
+    extracted_files = []
+
     with pyzipper.AESZipFile(zip_name, 'r') as zip_ref:
         zip_ref.setpassword(b"")
         for name in zip_ref.namelist():
@@ -27,9 +29,17 @@ def unzip_files(zip_name, extract_folder="unzipped_excels"):
                 decoded = name.encode('cp437').decode('utf-8')
             except:
                 decoded = name.encode('cp437').decode('euc-kr')
-            with zip_ref.open(name) as src, open(os.path.join(extract_folder, decoded), "wb") as dst:
+
+            filename = os.path.basename(decoded)  # 디렉토리 제거
+            if not filename.lower().endswith(('.xlsx', '.xls')):
+                continue  # 엑셀 파일만 대상
+
+            target_path = os.path.join(extract_folder, filename)
+            with zip_ref.open(name) as src, open(target_path, "wb") as dst:
                 shutil.copyfileobj(src, dst)
-    return [f for f in os.listdir(extract_folder) if f.endswith(('.xlsx', '.xls'))]
+            extracted_files.append(filename)
+
+    return extracted_files
 
 
 def read_excel_compat(path):
@@ -73,21 +83,19 @@ def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작�
 
 
 def run_merge():
-    # ✅ 안내 메시지 상단 출력
-    info_box = widgets.Output()
-    with info_box:
-        display(Markdown("""
-### 📦 xlmerge 사용 안내
+    # 안내 메시지 출력
+    print("""
+📦 xlmerge 사용 안내
 
-1. **zip 파일을 업로드**하세요 (`.xlsx`, `.xls` 파일들을 압축한 zip)
+1. zip 파일을 업로드하세요 (`.xlsx`, `.xls` 포함 가능)
 2. 병합 기준을 선택하세요:
-   - `'★시작★'` 같은 텍스트 (기본값) 또는
-   - 시작할 **행 번호**
-3. **`병합 실행` 버튼을 클릭**하세요
+   - '★시작★' 같은 텍스트 (기본값) 또는
+   - 시작할 행 번호
+3. '병합 실행' 버튼을 클릭하세요
 4. 병합된 엑셀 파일이 자동으로 다운로드됩니다.
 
-⚠️ *zip 내부에는 `.xlsx`, `.xls` 파일만 포함되어 있어야 합니다.*
-        """))
+⚠️ zip 내부에는 .xlsx 또는 .xls 파일만 있어야 합니다.
+""")
 
     mode_radio = widgets.RadioButtons(options=[('기준 텍스트로 병합', 'text'), ('행 번호로 병합', 'row')])
     marker_input = widgets.Text(value='★시작★')
@@ -98,25 +106,34 @@ def run_merge():
 
     def update_input(mode):
         input_box.children = [marker_input] if mode == 'text' else [row_input]
+
     mode_radio.observe(lambda ch: update_input(ch['new']) if ch['name'] == 'value' else None, names='value')
 
     def on_confirm(b):
         clear_output(wait=True)
-        display(info_box)
+        print("📦 파일 업로드 대기 중...")
         display(mode_radio, input_box, confirm_button)
         display(output_box)
+
         with output_box:
             clean_workspace()
             uploaded = files.upload()
+            if not uploaded:
+                print("❌ 업로드된 zip 파일이 없습니다.")
+                return
+
             zip_name = list(uploaded.keys())[0]
             folder = "unzipped_excels"
             files_to_merge = unzip_files(zip_name, folder)
+
             if not files_to_merge:
-                print("❌ 병합할 엑셀 없음.")
+                print("❌ 병합할 엑셀 파일이 없습니다. (.xls/.xlsx)")
                 return
+
             mode = mode_radio.value
             marker = marker_input.value
             row_idx = row_input.value
+
             result_file = merge_excels(files_to_merge, folder, mode, marker, row_idx)
             if result_file:
                 print(f"✅ 병합 완료 → {result_file}")
@@ -125,5 +142,6 @@ def run_merge():
                 print("⚠️ 병합 실패")
 
     confirm_button.on_click(on_confirm)
-    display(info_box)
+
+    # 인터페이스 출력
     display(mode_radio, input_box, confirm_button)
