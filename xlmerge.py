@@ -1,6 +1,5 @@
 # xlmerge.py
 
-from IPython.display import display, Markdown
 import os, glob, shutil
 import pandas as pd
 import pyzipper
@@ -64,9 +63,13 @@ def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작�
     result.to_excel(outname, index=False)
     return outname
 
+from IPython.display import display, Markdown  # 반드시 필요
+
 def run_merge():
-    # ✅ Markdown 안내 메시지를 UI 위에 띄우기
-    display(Markdown("""
+    # ✅ Markdown 안내 메시지를 UI 위젯 위에 안전하게 표시
+    info_box = widgets.Output()
+    with info_box:
+        display(Markdown("""
 ### 📦 xlmerge 사용 안내
 
 1. **zip 파일을 업로드**하세요 (xlsx 파일들을 압축한 zip)
@@ -77,8 +80,9 @@ def run_merge():
 4. 병합된 엑셀 파일이 자동으로 다운로드됩니다.
 
 ⚠️ *zip 내부에는 .xlsx 파일만 포함되어 있어야 합니다.*
-    """))
+"""))
 
+    # 기존 위젯 구성
     mode_radio = widgets.RadioButtons(options=[('기준 텍스트로 병합', 'text'), ('행 번호로 병합', 'row')])
     marker_input = widgets.Text(value='★시작★')
     row_input = widgets.IntText(value=0)
@@ -88,11 +92,12 @@ def run_merge():
 
     def update_input(mode):
         input_box.children = [marker_input] if mode == 'text' else [row_input]
-
     mode_radio.observe(lambda ch: update_input(ch['new']) if ch['name'] == 'value' else None, names='value')
 
     def on_confirm(b):
         clear_output(wait=True)
+        display(info_box)  # 다시 표시
+        display(mode_radio, input_box, confirm_button)
         display(output_box)
         with output_box:
             clean_workspace()
@@ -114,4 +119,7 @@ def run_merge():
                 print("⚠️ 병합 실패")
 
     confirm_button.on_click(on_confirm)
+
+    # ✅ UI 출력 순서 조정
+    display(info_box)
     display(mode_radio, input_box, confirm_button)
