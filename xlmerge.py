@@ -1,23 +1,5 @@
 # xlmerge.py
 
-def run_merge():
-    # ✅ 사용법 안내 메시지 (최초 실행 시)
-    print("""
-📦 xlmerge 사용 안내
-
-1. zip 파일을 업로드하세요 (xlsx 파일들을 압축한 zip)
-2. 병합 기준을 선택하세요:
-   - '★시작★' 같은 텍스트 (기본값) 또는
-   - 시작할 행 번호
-3. '병합 실행' 버튼 클릭
-4. 병합된 파일이 자동으로 다운로드됩니다.
-
-⚠️ zip 내부에는 xlsx 파일만 있어야 합니다.
-""")
-
-
-
-
 import os, glob, shutil
 import pandas as pd
 import pyzipper
@@ -82,6 +64,26 @@ def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작�
     return outname
 
 def run_merge():
+
+
+        # ✅ Markdown 안내 메시지를 UI 위에 띄우기
+    display(Markdown("""
+### 📦 xlmerge 사용 안내
+
+1. **zip 파일을 업로드**하세요 (xlsx 파일들을 압축한 zip)
+2. 병합 기준을 선택하세요:
+   - `'★시작★'` 같은 텍스트 (기본값) 또는
+   - 시작할 **행 번호**
+3. **`병합 실행` 버튼을 클릭**하세요
+4. 병합된 엑셀 파일이 자동으로 다운로드됩니다.
+
+⚠️ *zip 내부에는 .xlsx 파일만 포함되어 있어야 합니다.*
+    """))
+    
+
+
+
+    
     mode_radio = widgets.RadioButtons(options=[('기준 텍스트로 병합', 'text'), ('행 번호로 병합', 'row')])
     marker_input = widgets.Text(value='★시작★')
     row_input = widgets.IntText(value=0)
