@@ -1,12 +1,11 @@
-# xlmerge.py
-
 import os, glob, shutil
 import pandas as pd
 import pyzipper
 from datetime import datetime
 from google.colab import files
 import ipywidgets as widgets
-from IPython.display import display, clear_output
+from IPython.display import display, Markdown, clear_output
+
 
 def clean_workspace():
     folder = "unzipped_excels"
@@ -17,6 +16,7 @@ def clean_workspace():
             os.remove(f)
         except:
             pass
+
 
 def unzip_files(zip_name, extract_folder="unzipped_excels"):
     os.makedirs(extract_folder, exist_ok=True)
@@ -29,7 +29,15 @@ def unzip_files(zip_name, extract_folder="unzipped_excels"):
                 decoded = name.encode('cp437').decode('euc-kr')
             with zip_ref.open(name) as src, open(os.path.join(extract_folder, decoded), "wb") as dst:
                 shutil.copyfileobj(src, dst)
-    return [f for f in os.listdir(extract_folder) if f.endswith('.xlsx')]
+    return [f for f in os.listdir(extract_folder) if f.endswith(('.xlsx', '.xls'))]
+
+
+def read_excel_compat(path):
+    if path.endswith('.xls'):
+        return pd.read_excel(path, engine='xlrd', header=None)
+    else:
+        return pd.read_excel(path, header=None)
+
 
 def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작★', row_idx=0):
     merged = []
@@ -37,7 +45,7 @@ def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작�
 
     for idx, file in enumerate(files_to_merge):
         path = os.path.join(extract_folder, file)
-        df_raw = pd.read_excel(path, header=None)
+        df_raw = read_excel_compat(path)
 
         if idx == 0:
             if mode == 'text':
@@ -63,26 +71,24 @@ def merge_excels(files_to_merge, extract_folder, mode='text', marker='★시작�
     result.to_excel(outname, index=False)
     return outname
 
-from IPython.display import display, Markdown  # 반드시 필요
 
 def run_merge():
-    # ✅ Markdown 안내 메시지를 UI 위젯 위에 안전하게 표시
+    # ✅ 안내 메시지 상단 출력
     info_box = widgets.Output()
     with info_box:
         display(Markdown("""
 ### 📦 xlmerge 사용 안내
 
-1. **zip 파일을 업로드**하세요 (xlsx 파일들을 압축한 zip)
+1. **zip 파일을 업로드**하세요 (`.xlsx`, `.xls` 파일들을 압축한 zip)
 2. 병합 기준을 선택하세요:
    - `'★시작★'` 같은 텍스트 (기본값) 또는
    - 시작할 **행 번호**
 3. **`병합 실행` 버튼을 클릭**하세요
 4. 병합된 엑셀 파일이 자동으로 다운로드됩니다.
 
-⚠️ *zip 내부에는 .xlsx 파일만 포함되어 있어야 합니다.*
-"""))
+⚠️ *zip 내부에는 `.xlsx`, `.xls` 파일만 포함되어 있어야 합니다.*
+        """))
 
-    # 기존 위젯 구성
     mode_radio = widgets.RadioButtons(options=[('기준 텍스트로 병합', 'text'), ('행 번호로 병합', 'row')])
     marker_input = widgets.Text(value='★시작★')
     row_input = widgets.IntText(value=0)
@@ -96,7 +102,7 @@ def run_merge():
 
     def on_confirm(b):
         clear_output(wait=True)
-        display(info_box)  # 다시 표시
+        display(info_box)
         display(mode_radio, input_box, confirm_button)
         display(output_box)
         with output_box:
@@ -119,7 +125,5 @@ def run_merge():
                 print("⚠️ 병합 실패")
 
     confirm_button.on_click(on_confirm)
-
-    # ✅ UI 출력 순서 조정
     display(info_box)
     display(mode_radio, input_box, confirm_button)
