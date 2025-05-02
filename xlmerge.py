@@ -1,5 +1,6 @@
 # xlmerge.py
 
+from IPython.display import display, Markdown
 import os, glob, shutil
 import pandas as pd
 import pyzipper
