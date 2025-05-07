@@ -48,7 +48,7 @@ def run_all():
             merged_blocks.append(full_block)
 
         final_merged = merged_blocks[0]
-        for block in merged_bl1:]:
+        for block in merged_blocks[1:]:  # ✅ 여기!
             final_merged = pd.concat([final_merged, block.iloc[:, 1:]], axis=1)
 
         data_block = final_merged.iloc[1:6, :]
