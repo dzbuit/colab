@@ -61,6 +61,9 @@ def run_all():
         if drop_garbage_rows:
             final_filtered = final_filtered.drop(index=range(46, 55), errors="ignore").reset_index(drop=True)
 
+        # ✅ 마지막 줄 추가: 첫 행 제거
+        final_filtered = final_filtered.drop(index=0).reset_index(drop=True)
+
         return final_filtered
 
     uploaded = files.upload()
