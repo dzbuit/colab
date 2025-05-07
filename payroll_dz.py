@@ -61,15 +61,26 @@ def run_all():
         if drop_garbage_rows:
             final_filtered = final_filtered.drop(index=range(46, 55), errors="ignore").reset_index(drop=True)
 
-        # ✅ 마지막 줄 추가: 첫 행 제거
-        final_filtered = final_filtered.drop(index=0).reset_index(drop=True)
-
         return final_filtered
 
+    # 1️⃣ 파일 업로드
     uploaded = files.upload()
     file_name = next(iter(uploaded))
     df_raw = pd.read_excel(io.BytesIO(uploaded[file_name]))
+
+    # 2️⃣ 병합 처리
     df_final = process_final_extract_all_in_one(df_raw)
-    output_file = "급여대장_페이롤DZ.xlsx"
-    df_final.to_excel(output_file, index=False)
-    files.download(output_file)
+
+    # 3️⃣ 병합된 결과 저장
+    merged_file = "급여대장_페이롤DZ_병합본.xlsx"
+    df_final.to_excel(merged_file, index=False)
+
+    # 4️⃣ 후처리: 첫 줄 제거
+    df_trimmed = pd.read_excel(merged_file).drop(index=0).reset_index(drop=True)
+
+    # 5️⃣ 후처리본 저장
+    final_file = "급여대장_페이롤DZ_후처리본.xlsx"
+    df_trimmed.to_excel(final_file, index=False)
+
+    # 6️⃣ 다운로드 트리거
+    files.download(final_file)
