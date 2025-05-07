@@ -1,6 +1,22 @@
 # payroll_dz.py
 
 def run_all():
+    # 📘 설명서 출력
+    print("""
+📢  **디지털 기획운영부 직접 제작**
+
+1️⃣ 왼쪽 상단 ⏵ **[시작 버튼]**을 클릭해주세요.
+
+2️⃣ 아래쪽에 **E-HR** 에서 내려받은  
+📂 **"급여대장"** 파일을 첨부합니다.
+
+📄 **폼드(묶음형) 보고서**를  
+🔲 속성별 **구조화된 보고서**로 변환해드립니다.
+
+---
+✅ **완벽하지 않을 수 있습니다.**
+    """)
+
     import pandas as pd, io
     from google.colab import files
 
@@ -32,7 +48,7 @@ def run_all():
             merged_blocks.append(full_block)
 
         final_merged = merged_blocks[0]
-        for block in merged_blocks[1:]:
+        for block in merged_bl1:]:
             final_merged = pd.concat([final_merged, block.iloc[:, 1:]], axis=1)
 
         data_block = final_merged.iloc[1:6, :]
@@ -75,7 +91,7 @@ def run_all():
     merged_file = "급여대장_페이롤DZ_병합본.xlsx"
     df_final.to_excel(merged_file, index=False)
 
-    # 4️⃣ 병합본 불러와 첫 행을 컬럼으로 재설정
+    # 4️⃣ 병합본 불러와 첫 행을 header로 재설정
     df_temp = pd.read_excel(merged_file)
     new_header = df_temp.iloc[0]
     df_cleaned = df_temp[1:].copy()
