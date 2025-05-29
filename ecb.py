@@ -305,6 +305,7 @@ def run_final_report(b):
             ["사업유형", "사업장명", "재원"]
         )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
 
+        # ✅ 재원 우선순위 정렬
         fund_priority = [
             "경상보조금", "기타보조금", "후원금", "후원물품",
             "법인전입금(후원금)기타", "법인전입금(지역)", "법인전입금(후원금)", "잡수입", "이월금"
@@ -321,6 +322,7 @@ def run_final_report(b):
             ["사업유형", "사업장명", "항"]
         )[[col for col in expense_cols if col in df_expense.columns]].sum().reset_index()
 
+        # ✅ 항목 우선순위 정렬
         hang_priority = [
             "인건비", "업무추진비", "운영비", "시설비", "사업비", "잡지출", "기타"
         ]
@@ -331,7 +333,7 @@ def run_final_report(b):
             ["사업유형", "사업장명", "정렬순서", "항"]
         ).drop(columns="정렬순서")
 
-        # ✅ 시트12: 수입 소계 삽입
+        # ✅ 시트12: 사업유형별 수입 소계 삽입
         income_value_cols = [
             col for col in summary_income_by_fund.columns
             if col not in ["사업유형", "사업장명", "재원"]
@@ -340,7 +342,7 @@ def run_final_report(b):
             summary_income_by_fund, "사업유형", income_value_cols
         )
 
-        # ✅ 시트13: 지출 소계 삽입
+        # ✅ 시트13: 사업유형별 지출 소계 삽입
         expense_value_cols = [
             col for col in summary_expense_by_hang.columns
             if col not in ["사업유형", "사업장명", "항"]
@@ -348,14 +350,6 @@ def run_final_report(b):
         summary_expense_by_hang = insert_subtotals(
             summary_expense_by_hang, "사업유형", expense_value_cols
         )
-
-        # ✅ 불필요한 컬럼 제거
-        if "수입지출계획_증감사유" in df_expense.columns:
-            df_expense.drop(columns=["수입지출계획_증감사유"], inplace=True)
-
-
-
-
         
 
         # ✅ 불필요한 컬럼 제거
