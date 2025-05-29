@@ -304,7 +304,6 @@ def run_final_report(b):
         summary_income_by_fund = df_income.groupby(
             ["사업유형", "사업장명", "재원"]
         )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
-
         # ✅ 재원 우선순위 정렬
         fund_priority = [
             "경상보조금", "기타보조금", "후원금", "후원물품",
