@@ -300,10 +300,18 @@ def run_final_report(b):
         )[income_cols].sum().reset_index()
         pivot_income_11 = pivot_income_11.sort_values(["기관", "재원순서"])
 
+        # ✅ 컬럼명 통일: '사업장_사업유형' → '사업유형'
+        if "사업장_사업유형" in df_income.columns:
+            df_income.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
+
+        if "사업장_사업유형" in df_expense.columns:
+            df_expense.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
+
         # ✅ 시트12: 수입 요약 - 사업유형, 사업장명, 재원 기준 그룹바이
         summary_income_by_fund = df_income.groupby(
             ["사업유형", "사업장명", "재원"]
         )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
+
         # ✅ 재원 우선순위 정렬
         fund_priority = [
             "경상보조금", "기타보조금", "후원금", "후원물품",
@@ -349,7 +357,8 @@ def run_final_report(b):
         summary_expense_by_hang = insert_subtotals(
             summary_expense_by_hang, "사업유형", expense_value_cols
         )
-        
+
+       
 
         # ✅ 불필요한 컬럼 제거
         # ✅ 시트1_지출재원항매핑: 수입지출계획_증감사유만 제거, 나머지는 유지
