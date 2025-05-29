@@ -300,63 +300,6 @@ def run_final_report(b):
         )[income_cols].sum().reset_index()
         pivot_income_11 = pivot_income_11.sort_values(["기관", "재원순서"])
 
-        # ✅ 컬럼명 통일: '사업장_사업유형' → '사업유형'
-        if "사업장_사업유형" in df_income.columns:
-            df_income.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
-
-        if "사업장_사업유형" in df_expense.columns:
-            df_expense.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
-
-        # ✅ 시트12: 수입 요약 - 사업장_사업유형, 기관, 재원 기준 그룹바이
-        summary_income_by_fund = df_income.groupby(
-            ["사업장_사업유형", "기관", "재원"]
-        )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
-
-        # ✅ 재원 우선순위 정렬
-        fund_priority = [
-            "경상보조금", "기타보조금", "후원금", "후원물품",
-            "법인전입금(후원금)기타", "법인전입금(지역)", "법인전입금(후원금)", "잡수입", "이월금"
-        ]
-        summary_income_by_fund["정렬순서"] = summary_income_by_fund["재원"].apply(
-            lambda x: fund_priority.index(x) if x in fund_priority else 999
-        )
-        summary_income_by_fund = summary_income_by_fund.sort_values(
-            ["사업장_사업유형", "기관", "정렬순서", "재원"]
-        ).drop(columns="정렬순서")
-
-        # ✅ 시트13: 지출 요약 - 사업장_사업유형, 기관, 항 기준 그룹바이
-        summary_expense_by_hang = df_expense.groupby(
-            ["사업장_사업유형", "기관", "항"]
-        )[[col for col in expense_cols if col in df_expense.columns]].sum().reset_index()
-
-        # ✅ 항목 우선순위 정렬
-        hang_priority = [
-            "인건비", "업무추진비", "운영비", "시설비", "사업비", "잡지출", "기타"
-        ]
-        summary_expense_by_hang["정렬순서"] = summary_expense_by_hang["항"].apply(
-            lambda x: hang_priority.index(x) if x in hang_priority else 999
-        )
-        summary_expense_by_hang = summary_expense_by_hang.sort_values(
-            ["사업장_사업유형", "기관", "정렬순서", "항"]
-        ).drop(columns="정렬순서")
-
-        # ✅ 시트12: 사업유형별 수입 소계 삽입
-        income_value_cols = [
-            col for col in summary_income_by_fund.columns
-            if col not in ["사업장_사업유형", "기관", "재원"]
-        ]
-        summary_income_by_fund = insert_subtotals(
-            summary_income_by_fund, "사업장_사업유형", income_value_cols
-        )
-
-        # ✅ 시트13: 사업유형별 지출 소계 삽입
-        expense_value_cols = [
-            col for col in summary_expense_by_hang.columns
-            if col not in ["사업장_사업유형", "기관", "항"]
-        ]
-        summary_expense_by_hang = insert_subtotals(
-            summary_expense_by_hang, "사업장_사업유형", expense_value_cols
-        )
 
        
 
@@ -408,8 +351,7 @@ def run_final_report(b):
             pivot_expense_9.to_excel(writer, index=False, sheet_name="시트9_지출_관-세목")
             pivot_expense_10.to_excel(writer, index=False, sheet_name="시트10_지출_관-세목-재원")
             pivot_income_11.to_excel(writer, index=False, sheet_name="시트11_수입_관-세목-재원")
-            summary_income_by_fund.to_excel(writer, index=False, sheet_name="시트12_수입요약_재원기준")
-            summary_expense_by_hang.to_excel(writer, index=False, sheet_name="시트13_지출요약_항목기준")
+
 
 
 
