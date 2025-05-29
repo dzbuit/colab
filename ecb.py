@@ -307,9 +307,9 @@ def run_final_report(b):
         if "사업장_사업유형" in df_expense.columns:
             df_expense.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
 
-        # ✅ 시트12: 수입 요약 - 사업유형, 사업장, 재원 기준 그룹바이
+        # ✅ 시트12: 수입 요약 - 사업장_사업유형, 기관, 재원 기준 그룹바이
         summary_income_by_fund = df_income.groupby(
-            ["사업유형", "사업장", "재원"]
+            ["사업장_사업유형", "기관", "재원"]
         )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
 
         # ✅ 재원 우선순위 정렬
@@ -321,13 +321,12 @@ def run_final_report(b):
             lambda x: fund_priority.index(x) if x in fund_priority else 999
         )
         summary_income_by_fund = summary_income_by_fund.sort_values(
-            ["사업유형", "사업장", "정렬순서", "재원"]
+            ["사업장_사업유형", "기관", "정렬순서", "재원"]
         ).drop(columns="정렬순서")
 
-
-        # ✅ 시트13: 지출 요약 - 사업유형, 사업장명, 항 기준 그룹바이
+        # ✅ 시트13: 지출 요약 - 사업장_사업유형, 기관, 항 기준 그룹바이
         summary_expense_by_hang = df_expense.groupby(
-            ["사업유형", "사업장명", "항"]
+            ["사업장_사업유형", "기관", "항"]
         )[[col for col in expense_cols if col in df_expense.columns]].sum().reset_index()
 
         # ✅ 항목 우선순위 정렬
@@ -338,25 +337,25 @@ def run_final_report(b):
             lambda x: hang_priority.index(x) if x in hang_priority else 999
         )
         summary_expense_by_hang = summary_expense_by_hang.sort_values(
-            ["사업유형", "사업장명", "정렬순서", "항"]
+            ["사업장_사업유형", "기관", "정렬순서", "항"]
         ).drop(columns="정렬순서")
 
         # ✅ 시트12: 사업유형별 수입 소계 삽입
         income_value_cols = [
             col for col in summary_income_by_fund.columns
-            if col not in ["사업유형", "사업장명", "재원"]
+            if col not in ["사업장_사업유형", "기관", "재원"]
         ]
         summary_income_by_fund = insert_subtotals(
-            summary_income_by_fund, "사업유형", income_value_cols
+            summary_income_by_fund, "사업장_사업유형", income_value_cols
         )
 
         # ✅ 시트13: 사업유형별 지출 소계 삽입
         expense_value_cols = [
             col for col in summary_expense_by_hang.columns
-            if col not in ["사업유형", "사업장명", "항"]
+            if col not in ["사업장_사업유형", "기관", "항"]
         ]
         summary_expense_by_hang = insert_subtotals(
-            summary_expense_by_hang, "사업유형", expense_value_cols
+            summary_expense_by_hang, "사업장_사업유형", expense_value_cols
         )
 
        
