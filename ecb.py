@@ -307,9 +307,9 @@ def run_final_report(b):
         if "사업장_사업유형" in df_expense.columns:
             df_expense.rename(columns={"사업장_사업유형": "사업유형"}, inplace=True)
 
-        # ✅ 시트12: 수입 요약 - 사업유형, 사업장명, 재원 기준 그룹바이
+        # ✅ 시트12: 수입 요약 - 사업유형, 사업장, 재원 기준 그룹바이
         summary_income_by_fund = df_income.groupby(
-            ["사업유형", "사업장명", "재원"]
+            ["사업유형", "사업장", "재원"]
         )[[col for col in income_cols if col in df_income.columns]].sum().reset_index()
 
         # ✅ 재원 우선순위 정렬
@@ -321,8 +321,9 @@ def run_final_report(b):
             lambda x: fund_priority.index(x) if x in fund_priority else 999
         )
         summary_income_by_fund = summary_income_by_fund.sort_values(
-            ["사업유형", "사업장명", "정렬순서", "재원"]
+            ["사업유형", "사업장", "정렬순서", "재원"]
         ).drop(columns="정렬순서")
+
 
         # ✅ 시트13: 지출 요약 - 사업유형, 사업장명, 항 기준 그룹바이
         summary_expense_by_hang = df_expense.groupby(
