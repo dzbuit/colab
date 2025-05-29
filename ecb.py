@@ -311,17 +311,18 @@ def run_final_report(b):
             .reset_index()
         )
 
-        # 정렬: '경상보조금', '기타보조금', '후원금' 등 특정 재원 우선 정렬
+        # ✅ 재원 우선순위 정렬
         fund_priority = [
             "경상보조금", "기타보조금", "후원금", "후원물품",
             "법인전입금(후원금)기타", "법인전입금(지역)", "법인전입금(후원금)", "잡수입", "이월금"
         ]
         summary_income_by_fund["정렬순서"] = summary_income_by_fund["재원"].apply(
-            lambda x: fund_priority.index(x) if x in fund_priority else 999
+        lambda x: fund_priority.index(x) if x in fund_priority else 999
         )
         summary_income_by_fund = summary_income_by_fund.sort_values(
-            ["사업유형", "사업장명", "정렬순서", "재원"]
+        ["사업유형", "사업장명", "정렬순서", "재원"]
         ).drop(columns="정렬순서")
+
 
         
         # ✅ 시트13: 지출 요약 - 사업유형, 사업장명, 항 기준 그룹바이
